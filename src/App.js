@@ -2,41 +2,60 @@ import React from "react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-// 4. Action Creator를 import 합니다.
-import { addNumber, minusNumber } from "./redux/modules/counter";
+import { addTodo } from "./redux/modules/todos";
 
 const App = () => {
-	// 1. dispatch를 사용하기 위해 선언해줍니다.
   const dispatch = useDispatch();
-  const [number, setNumber] = useState(0);
-  const globalNumber = useSelector((state) => state.counter.number);
+  const [title, setTitle] = useState('');
+  const [desc, setDesc] = useState('');
+  const todos = useSelector((state) => state.todos.todo);
 
   const onChangeHandler = (event) => {
     const { value } = event.target;
-    setNumber(+value);
+    const type = event.target.dataset.type;
+    switch(type) {
+      case 'title':
+        setTitle(value);
+      break;
+      case 'desc':
+        setDesc(value);
+      break;
+    }
   };
 
-	// 2. 더하기 버튼을 눌렀을 때 실행할 이벤트핸들러를 만들어줍니다.
-  const onClickNumberHandler = (type) => {
-		// 5. Action creator를 dispatch 해주고, 그때 Action creator의 인자에 number를 넣어줍니다.
-    switch(type) {
-      case 'plus':
-        dispatch(addNumber(number));
-      break;
-      case 'minus':
-        dispatch(minusNumber(number));
-      break;
-      default:
+  const onClickTodoHandler = () => {
+    if(title.trim() === "") {
+      alert('할 일을 입력해주세요!');
+      return;
     }
+    dispatch(addTodo({
+      id: todos.length > 0 ? todos.length : 0,
+      title,
+      desc
+    }));
+    setTitle('');
+    setDesc('');
   };
 
   return (
     <div>
-      <div>{globalNumber}</div>
-      <input type="number" onChange={onChangeHandler} />
-			{/* 3. 더하기 버튼 이벤트핸들러를 연결해줍니다. */}
-      <button onClick={() => onClickNumberHandler('plus')}>더하기</button>
-      <button onClick={() => onClickNumberHandler('minus')}>빼기</button>
+      <input value={title} type="text" data-type="title" placeholder="할 일의 제목을 입력해주세요" onChange={onChangeHandler} />
+      <input value={desc} type="text" data-type="desc" placeholder="할 일의 설명을 입력해주세요" onChange={onChangeHandler} />
+      <button onClick={onClickTodoHandler}>추가</button>
+
+      {
+        todos.length > 0 
+        ?
+        <ul>
+          {todos.map((todo, index) => (
+            <li key={index}>
+              <h2>{todo.title}</h2>
+              {todo.desc && <p>{todo.desc}</p>}
+            </li>
+          ))}
+        </ul>
+        : <p>할 일을 등록해주세요.</p>
+      }
     </div>
   );
 };
